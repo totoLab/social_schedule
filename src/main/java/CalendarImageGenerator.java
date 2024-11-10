@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.YearMonth;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -17,16 +18,20 @@ public class CalendarImageGenerator {
 
     // Define constants for layout and styling
     private static final int CELL_SIZE = 140;
+    private static final int TITLE_HEIGHT = 80;
     private static final int HEADER_HEIGHT = 50;
+    private static final int CONTAINER_HEIGHT = TITLE_HEIGHT + HEADER_HEIGHT;
     private static final int NUM_COLUMNS = 7; // 7 days of the week
     private static final int NUM_ROWS = 6; // Maximum 6 rows for a month
     private static final int CALENDAR_WIDTH = CELL_SIZE * NUM_COLUMNS;
-    private static final int CALENDAR_HEIGHT = (CELL_SIZE * NUM_ROWS) + HEADER_HEIGHT;
+    private static final int CALENDAR_HEIGHT = (CELL_SIZE * NUM_ROWS) + CONTAINER_HEIGHT;
     private static final int DATE_X_OFFSET = 20;
     private static final int CONTENT_Y_OFFSET = 40;
 
-    private static final Font HEADER_FONT = new Font("Arial", Font.BOLD, 26);
-    private static final Font DATE_FONT = new Font("Arial", Font.BOLD, 21);
+    private static final String DEFAULT_FONT_NAME = "Cantarell";
+    private static final Font TITLE_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 40);
+    private static final Font HEADER_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 26);
+    private static final Font DATE_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 21);
 
     private final Map<String, Color> makerColors = new HashMap<>();
 
@@ -40,7 +45,7 @@ public class CalendarImageGenerator {
      */
     private void initializeMakerColors() {
         List<String> people = Arrays.asList("Antonio", "Sharon", "Desiree", "Sara", "Marta", "Caterina", "Alessia", "Ines");
-        List<String> colorHexValues = Arrays.asList("044389", "F9B9F2", "FFAD05", "7CAFC4", "BC412B", "DBAD6A", "59A96A", "485696");
+        List<String> colorHexValues = Arrays.asList("306BAD", "F9B9F2", "FFAD05", "7CAFC4", "BC412B", "DBAD6A", "59A96A", "DBEFBC");
 
         for (int i = 0; i < people.size(); i++) {
             makerColors.put(people.get(i), Color.decode("#" + colorHexValues.get(i)));
@@ -59,6 +64,7 @@ public class CalendarImageGenerator {
 
         // Draw the calendar components
         drawBackground(g2d);
+        drawTitle(g2d, year, month);
         drawDaysOfWeekHeader(g2d);
         drawCalendarDays(g2d, schedule, year, month);
 
@@ -95,6 +101,19 @@ public class CalendarImageGenerator {
     /**
      * Draws the days of the week header (Sun, Mon, Tue, ...) at the top of the calendar.
      */
+    private void drawTitle(Graphics2D g2d, int year, Month month) {
+        g2d.setFont(TITLE_FONT);
+        g2d.setColor(Color.BLACK);
+
+        String title = String.format("Calendario RCY %s %d", month, year);
+        FontMetrics titleMetrics = g2d.getFontMetrics();
+        int x = (CALENDAR_WIDTH - titleMetrics.stringWidth(title)) / 2;
+        g2d.drawString(title, x, TITLE_HEIGHT / 3 * 2);
+    }
+
+    /**
+     * Draws the days of the week header (Sun, Mon, Tue, ...) at the top of the calendar.
+     */
     private void drawDaysOfWeekHeader(Graphics2D g2d) {
         String[] daysOfWeek = {"Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"};
         g2d.setFont(HEADER_FONT);
@@ -103,7 +122,7 @@ public class CalendarImageGenerator {
         FontMetrics headerMetrics = g2d.getFontMetrics();
         for (int i = 0; i < NUM_COLUMNS; i++) {
             int x = i * CELL_SIZE + (CELL_SIZE - headerMetrics.stringWidth(daysOfWeek[i])) / 2;
-            g2d.drawString(daysOfWeek[i], x, HEADER_HEIGHT / 3 * 2);
+            g2d.drawString(daysOfWeek[i], x, TITLE_HEIGHT + HEADER_HEIGHT / 3 * 2);
         }
     }
 
@@ -140,13 +159,13 @@ public class CalendarImageGenerator {
     private void drawDayCell(Graphics2D g2d, int x, int y, int day, FontMetrics dateMetrics, Color backgroundColor) {
         g2d.setColor(backgroundColor);
         g2d.setFont(HEADER_FONT);
-        g2d.fillRect(x * CELL_SIZE, y * CELL_SIZE + HEADER_HEIGHT, CELL_SIZE, CELL_SIZE);
+        g2d.fillRect(x * CELL_SIZE, y * CELL_SIZE + CONTAINER_HEIGHT, CELL_SIZE, CELL_SIZE);
         g2d.setColor(Color.BLACK);
-        g2d.drawRect(x * CELL_SIZE, y * CELL_SIZE + HEADER_HEIGHT, CELL_SIZE, CELL_SIZE);
+        g2d.drawRect(x * CELL_SIZE, y * CELL_SIZE + CONTAINER_HEIGHT, CELL_SIZE, CELL_SIZE);
 
         String dayString = String.valueOf(day);
         int dayX = x * CELL_SIZE + (CELL_SIZE - dateMetrics.stringWidth(dayString)) / 2;
-        g2d.drawString(dayString, dayX, y * CELL_SIZE + HEADER_HEIGHT + CONTENT_Y_OFFSET);
+        g2d.drawString(dayString, dayX, y * CELL_SIZE + CONTAINER_HEIGHT + CONTENT_Y_OFFSET);
     }
 
     /**
@@ -163,11 +182,11 @@ public class CalendarImageGenerator {
         g2d.setColor(Color.BLACK);
         String contentType = content.getType().name();
         int contentX = x * CELL_SIZE + (CELL_SIZE - dateMetrics.stringWidth(contentType)) / 2;
-        g2d.drawString(contentType, contentX, y * CELL_SIZE + HEADER_HEIGHT + CONTENT_Y_OFFSET * 2);
+        g2d.drawString(contentType, contentX, y * CELL_SIZE + CONTAINER_HEIGHT + CONTENT_Y_OFFSET * 2);
 
         String contentMaker = content.getMaker();
         contentX = x * CELL_SIZE + (CELL_SIZE - dateMetrics.stringWidth(contentMaker)) / 2;
-        g2d.drawString(contentMaker, contentX, y * CELL_SIZE + HEADER_HEIGHT + CONTENT_Y_OFFSET * 3);
+        g2d.drawString(contentMaker, contentX, y * CELL_SIZE + CONTAINER_HEIGHT + CONTENT_Y_OFFSET * 3);
     }
 
     /**
@@ -190,7 +209,7 @@ public class CalendarImageGenerator {
         Schedule schedule = new Schedule("schedule.json");
         CalendarImageGenerator generator = new CalendarImageGenerator();
 
-        // Generate and save the calendar image for December 2024
-        generator.generateCalendarImage(schedule.getSchedule(), 2024, Month.DECEMBER, "december_2024_calendar.png");
+        YearMonth yearMonth = YearMonth.of(2024, 11);
+        generator.generateCalendarImage(schedule.getSchedule(), yearMonth.getYear(), yearMonth.getMonth(), "november_2024_calendar.png");
     }
 }
