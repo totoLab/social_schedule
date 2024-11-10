@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Month;
-import java.time.YearMonth;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +14,19 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 public class CalendarImageGenerator {
+
+    // Define constants for layout and styling
+    private static final int CELL_SIZE = 140;
+    private static final int HEADER_HEIGHT = 50;
+    private static final int NUM_COLUMNS = 7; // 7 days of the week
+    private static final int NUM_ROWS = 6; // Maximum 6 rows for a month
+    private static final int CALENDAR_WIDTH = CELL_SIZE * NUM_COLUMNS;
+    private static final int CALENDAR_HEIGHT = (CELL_SIZE * NUM_ROWS) + HEADER_HEIGHT;
+    private static final int DATE_X_OFFSET = 20;
+    private static final int CONTENT_Y_OFFSET = 40;
+
+    private static final Font HEADER_FONT = new Font("Arial", Font.BOLD, 30);
+    private static final Font DATE_FONT = new Font("Arial", Font.BOLD, 21);
 
     private final Map<String, Color> makerColors = new HashMap<>();
 
@@ -61,11 +73,7 @@ public class CalendarImageGenerator {
      * Creates a blank image to draw the calendar.
      */
     private BufferedImage createBlankImage() {
-        final int cellSize = 80;
-        final int headerHeight = 40;
-        final int calendarWidth = cellSize * 7;
-        final int calendarHeight = (cellSize * 6) + headerHeight;
-        return new BufferedImage(calendarWidth, calendarHeight, BufferedImage.TYPE_INT_ARGB);
+        return new BufferedImage(CALENDAR_WIDTH, CALENDAR_HEIGHT, BufferedImage.TYPE_INT_ARGB);
     }
 
     /**
@@ -80,26 +88,22 @@ public class CalendarImageGenerator {
      * Fills the background of the calendar with a white color.
      */
     private void drawBackground(Graphics2D g2d) {
-        final int calendarWidth = 560;
-        final int calendarHeight = 480;
         g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, 0, calendarWidth, calendarHeight);
+        g2d.fillRect(0, 0, CALENDAR_WIDTH, CALENDAR_HEIGHT);
     }
 
     /**
      * Draws the days of the week header (Sun, Mon, Tue, ...) at the top of the calendar.
      */
     private void drawDaysOfWeekHeader(Graphics2D g2d) {
-        final int cellSize = 80;
-        final int headerHeight = 40;
         String[] daysOfWeek = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-        Font headerFont = new Font("Arial", Font.BOLD, 14);
-        g2d.setFont(headerFont);
+        g2d.setFont(HEADER_FONT);
+        g2d.setColor(Color.BLACK); // Ensure text is black for visibility
 
         FontMetrics headerMetrics = g2d.getFontMetrics();
-        for (int i = 0; i < 7; i++) {
-            int x = i * cellSize + (cellSize - headerMetrics.stringWidth(daysOfWeek[i])) / 2;
-            g2d.drawString(daysOfWeek[i], x, headerHeight - 10);
+        for (int i = 0; i < NUM_COLUMNS; i++) {
+            int x = i * CELL_SIZE + (CELL_SIZE - headerMetrics.stringWidth(daysOfWeek[i])) / 2;
+            g2d.drawString(daysOfWeek[i], x, HEADER_HEIGHT / 2);
         }
     }
 
@@ -107,31 +111,25 @@ public class CalendarImageGenerator {
      * Draws the days of the month in their respective calendar cells.
      */
     private void drawCalendarDays(Graphics2D g2d, Map<LocalDate, Content> schedule, int year, Month month) {
-        final int cellSize = 80;
-        final int headerHeight = 40;
+        FontMetrics dateMetrics = g2d.getFontMetrics(DATE_FONT);
 
         LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
         int lengthOfMonth = month.length(firstDayOfMonth.isLeapYear());
         int startDay = firstDayOfMonth.getDayOfWeek().getValue() % 7;
 
-        Font dateFont = new Font("Arial", Font.PLAIN, 12);
-        g2d.setFont(dateFont);
-        FontMetrics dateMetrics = g2d.getFontMetrics();
-
         for (int day = 1; day <= lengthOfMonth; day++) {
-            int x = (startDay + day - 1) % 7;
-            int y = (startDay + day - 1) / 7 + 1;
+            int x = (startDay + day - 1) % NUM_COLUMNS;
+            int y = (startDay + day - 1) / NUM_COLUMNS + 1;
 
             // Draw each calendar day with a border
-
-            // Draw the content for each day if it exists
             LocalDate currentDate = LocalDate.of(year, month, day);
             Content content = schedule.get(currentDate);
+
             if (content != null) {
-                drawDayCell(g2d, x, y, cellSize, headerHeight, day, dateMetrics, makerColors.get(content.getMaker()));
-                drawContent(g2d, x, y, cellSize, headerHeight, content, dateMetrics);
+                drawDayCell(g2d, x, y, day, dateMetrics, makerColors.get(content.getMaker()));
+                drawContent(g2d, x, y, content, dateMetrics);
             } else {
-                drawDayCell(g2d, x, y, cellSize, headerHeight, day, dateMetrics, Color.lightGray);
+                drawDayCell(g2d, x, y, day, dateMetrics, Color.LIGHT_GRAY);
             }
         }
     }
@@ -139,32 +137,37 @@ public class CalendarImageGenerator {
     /**
      * Draws the individual day cell including the day number.
      */
-    private void drawDayCell(Graphics2D g2d, int x, int y, int cellSize, int headerHeight, int day, FontMetrics dateMetrics, Color backgroundColor) {
+    private void drawDayCell(Graphics2D g2d, int x, int y, int day, FontMetrics dateMetrics, Color backgroundColor) {
         g2d.setColor(backgroundColor);
-        g2d.fillRect(x * cellSize, y * cellSize + headerHeight, cellSize, cellSize);
+        g2d.setFont(HEADER_FONT);
+        g2d.fillRect(x * CELL_SIZE, y * CELL_SIZE + HEADER_HEIGHT, CELL_SIZE, CELL_SIZE);
         g2d.setColor(Color.BLACK);
-        g2d.drawRect(x * cellSize, y * cellSize + headerHeight, cellSize, cellSize);
+        g2d.drawRect(x * CELL_SIZE, y * CELL_SIZE + HEADER_HEIGHT, CELL_SIZE, CELL_SIZE);
 
         String dayString = String.valueOf(day);
-        int dayX = x * cellSize + (cellSize - dateMetrics.stringWidth(dayString)) / 2;
-        g2d.drawString(dayString, dayX, y * cellSize + headerHeight + 20);
+        int dayX = x * CELL_SIZE + (CELL_SIZE - dateMetrics.stringWidth(dayString)) / 2;
+        g2d.drawString(dayString, dayX, y * CELL_SIZE + HEADER_HEIGHT + CONTENT_Y_OFFSET);
     }
 
     /**
      * Draws the content in a cell if it exists (maker color and content type).
      */
-    private void drawContent(Graphics2D g2d, int x, int y, int cellSize, int headerHeight, Content content, FontMetrics dateMetrics) {
+    private void drawContent(Graphics2D g2d, int x, int y, Content content, FontMetrics dateMetrics) {
         String maker = content.getMaker();
+        g2d.setFont(DATE_FONT);
         Color makerColor = makerColors.get(maker);
 
         // Set the background color to the maker's color and fill the area
         g2d.setColor(makerColor);
 
-        // Draw the content type abbreviation
-        String contentType = content.getType().name().substring(0, 3);
-        int contentX = x * cellSize + (cellSize - dateMetrics.stringWidth(contentType)) / 2;
-        g2d.setColor(Color.BLACK); // Set the text color to black for readability
-        g2d.drawString(contentType, contentX, y * cellSize + headerHeight + 40);
+        g2d.setColor(Color.BLACK);
+        String contentType = content.getType().name();
+        int contentX = x * CELL_SIZE + (CELL_SIZE - dateMetrics.stringWidth(contentType)) / 2;
+        g2d.drawString(contentType, contentX, y * CELL_SIZE + HEADER_HEIGHT + CONTENT_Y_OFFSET * 2);
+
+        String contentMaker = content.getMaker();
+        contentX = x * CELL_SIZE + (CELL_SIZE - dateMetrics.stringWidth(contentMaker)) / 2;
+        g2d.drawString(contentMaker, contentX, y * CELL_SIZE + HEADER_HEIGHT + CONTENT_Y_OFFSET * 3);
     }
 
     /**
