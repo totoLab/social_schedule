@@ -123,13 +123,15 @@ public class CalendarImageGenerator {
             int y = (startDay + day - 1) / 7 + 1;
 
             // Draw each calendar day with a border
-            drawDayCell(g2d, x, y, cellSize, headerHeight, day, dateMetrics);
 
             // Draw the content for each day if it exists
             LocalDate currentDate = LocalDate.of(year, month, day);
             Content content = schedule.get(currentDate);
             if (content != null) {
+                drawDayCell(g2d, x, y, cellSize, headerHeight, day, dateMetrics, makerColors.get(content.getMaker()));
                 drawContent(g2d, x, y, cellSize, headerHeight, content, dateMetrics);
+            } else {
+                drawDayCell(g2d, x, y, cellSize, headerHeight, day, dateMetrics, Color.lightGray);
             }
         }
     }
@@ -137,8 +139,8 @@ public class CalendarImageGenerator {
     /**
      * Draws the individual day cell including the day number.
      */
-    private void drawDayCell(Graphics2D g2d, int x, int y, int cellSize, int headerHeight, int day, FontMetrics dateMetrics) {
-        g2d.setColor(Color.LIGHT_GRAY);
+    private void drawDayCell(Graphics2D g2d, int x, int y, int cellSize, int headerHeight, int day, FontMetrics dateMetrics, Color backgroundColor) {
+        g2d.setColor(backgroundColor);
         g2d.fillRect(x * cellSize, y * cellSize + headerHeight, cellSize, cellSize);
         g2d.setColor(Color.BLACK);
         g2d.drawRect(x * cellSize, y * cellSize + headerHeight, cellSize, cellSize);
@@ -155,13 +157,13 @@ public class CalendarImageGenerator {
         String maker = content.getMaker();
         Color makerColor = makerColors.get(maker);
 
-        // Draw a small rectangle representing the maker's color
+        // Set the background color to the maker's color and fill the area
         g2d.setColor(makerColor);
-        g2d.fillRect(x * cellSize, y * cellSize + headerHeight + 25, cellSize, 10);
 
         // Draw the content type abbreviation
         String contentType = content.getType().name().substring(0, 3);
         int contentX = x * cellSize + (cellSize - dateMetrics.stringWidth(contentType)) / 2;
+        g2d.setColor(Color.BLACK); // Set the text color to black for readability
         g2d.drawString(contentType, contentX, y * cellSize + headerHeight + 40);
     }
 
