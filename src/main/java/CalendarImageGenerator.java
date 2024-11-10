@@ -25,7 +25,7 @@ public class CalendarImageGenerator {
     private static final int DATE_X_OFFSET = 20;
     private static final int CONTENT_Y_OFFSET = 40;
 
-    private static final Font HEADER_FONT = new Font("Arial", Font.BOLD, 30);
+    private static final Font HEADER_FONT = new Font("Arial", Font.BOLD, 26);
     private static final Font DATE_FONT = new Font("Arial", Font.BOLD, 21);
 
     private final Map<String, Color> makerColors = new HashMap<>();
@@ -96,14 +96,14 @@ public class CalendarImageGenerator {
      * Draws the days of the week header (Sun, Mon, Tue, ...) at the top of the calendar.
      */
     private void drawDaysOfWeekHeader(Graphics2D g2d) {
-        String[] daysOfWeek = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+        String[] daysOfWeek = {"Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"};
         g2d.setFont(HEADER_FONT);
-        g2d.setColor(Color.BLACK); // Ensure text is black for visibility
+        g2d.setColor(Color.BLACK);
 
         FontMetrics headerMetrics = g2d.getFontMetrics();
         for (int i = 0; i < NUM_COLUMNS; i++) {
             int x = i * CELL_SIZE + (CELL_SIZE - headerMetrics.stringWidth(daysOfWeek[i])) / 2;
-            g2d.drawString(daysOfWeek[i], x, HEADER_HEIGHT / 2);
+            g2d.drawString(daysOfWeek[i], x, HEADER_HEIGHT / 3 * 2);
         }
     }
 
@@ -119,7 +119,7 @@ public class CalendarImageGenerator {
 
         for (int day = 1; day <= lengthOfMonth; day++) {
             int x = (startDay + day - 1) % NUM_COLUMNS;
-            int y = (startDay + day - 1) / NUM_COLUMNS + 1;
+            int y = (startDay + day - 1) / NUM_COLUMNS;
 
             // Draw each calendar day with a border
             LocalDate currentDate = LocalDate.of(year, month, day);
