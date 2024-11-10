@@ -118,19 +118,6 @@ public class ContentScheduler {
         }
     }
 
-    public String printScheduleMonth(YearMonth specifiedMonth) {
-        StringBuilder sb = new StringBuilder();
-        LocalDate firstDayOfMonth = specifiedMonth.atDay(1);
-        int daysInMonth = specifiedMonth.lengthOfMonth();
-        for (int day = 1; day <= daysInMonth; day++) {
-            LocalDate date = firstDayOfMonth.withDayOfMonth(day);
-            Content content = schedule.getSchedule().get(date);
-            sb.append(content);
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-
     public void printWeightDistribution() {
         System.out.println("Current weight distribution:");
         for (String person : people) {
@@ -153,7 +140,7 @@ public class ContentScheduler {
 
         contentScheduler.generateFullMonthSchedule(specifiedMonth);
         contentScheduler.printWeightDistribution();
-        System.out.println(contentScheduler.printScheduleMonth(specifiedMonth));
+        System.out.println(schedule.printScheduleMonth(specifiedMonth));
         schedule.saveToFile();
     }
 }

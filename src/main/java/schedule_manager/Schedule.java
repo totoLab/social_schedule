@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.*;
 
 public class Schedule {
@@ -105,6 +106,19 @@ public class Schedule {
         return "schedule_manager.Schedule{" +
                 "schedule=" + schedule +
                 '}';
+    }
+
+    public String printScheduleMonth(YearMonth specifiedMonth) {
+        StringBuilder sb = new StringBuilder();
+        LocalDate firstDayOfMonth = specifiedMonth.atDay(1);
+        int daysInMonth = specifiedMonth.lengthOfMonth();
+        for (int day = 1; day <= daysInMonth; day++) {
+            LocalDate date = firstDayOfMonth.withDayOfMonth(day);
+            Content content = schedule.get(date);
+            sb.append(content);
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
     public static void main(String[] args) {
