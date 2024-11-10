@@ -209,7 +209,7 @@ public class CalendarImageGenerator {
         Schedule schedule = new Schedule("schedule.json");
         CalendarImageGenerator generator = new CalendarImageGenerator();
 
-        YearMonth yearMonth = YearMonth.of(2024, 11);
-        generator.generateCalendarImage(schedule.getSchedule(), yearMonth.getYear(), yearMonth.getMonth(), "november_2024_calendar.png");
+        YearMonth yearMonth = YearMonth.of(2024, 12);
+        generator.generateCalendarImage(schedule.getSchedule(), yearMonth.getYear(), yearMonth.getMonth(), String.format("%s_%d_calendar.png",  yearMonth.getMonth().toString().toLowerCase(), yearMonth.getYear()));
     }
 }
