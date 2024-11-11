@@ -9,22 +9,37 @@ import java.util.*;
 public class ContentScheduler {
     private final Schedule schedule;
     private final List<String> people;
-    private final Map<String, Map<Type, Integer>> contentWeightMap;
+    private Map<String, Map<Type, Integer>> contentWeightMap;
     private final Map<DayOfWeek, Content> weeklyContent;
 
     public ContentScheduler(Schedule schedule, List<String> people, String program) {
         this.schedule = schedule;
         this.people = new ArrayList<>(people);
+        populateWeightsMap();
+        this.weeklyContent = parseWeeklySchedule(program);
+
+    }
+
+    /*
+     *
+     */
+    public void populateWeightsMap() {
         this.contentWeightMap = new HashMap<>();
-        for (String person : people) {
-            Map<Type, Integer> contentWeightMapPerson = new HashMap<>();
+        for (String maker : people) {
+            if (!contentWeightMap.containsKey(maker)) {
+                contentWeightMap.put(maker, new HashMap<>());
+            }
+            Map<Type, Integer> contentWeightMapPerson = contentWeightMap.get(maker);
             for (Type type : Type.values()) {
                 contentWeightMapPerson.put(type, 0);
             }
-            contentWeightMap.put(person, contentWeightMapPerson);
         }
-        this.weeklyContent = parseWeeklySchedule(program);
-
+        for (LocalDate date : schedule.getSchedule().keySet()) {
+            Content content = schedule.getSchedule().get(date);
+            Map<Type, Integer> contentWeightMapPerson = contentWeightMap.get(content.getMaker());
+            int current = contentWeightMapPerson.get(content.getType());
+            contentWeightMapPerson.put(content.getType(), current + 1);
+        }
     }
 
     /**
@@ -135,12 +150,20 @@ public class ContentScheduler {
         String weeklySchedule = "POST Monday, RIASSUNTO Tuesday, STORIA Wednesday, STORIA Thursday, LOCANDINA Friday, REEL Saturday, STORIA Sunday";
 
         ContentScheduler contentScheduler = new ContentScheduler(schedule, people, weeklySchedule);
-
-        YearMonth specifiedMonth = YearMonth.of(2024, Month.DECEMBER);
-
+        YearMonth specifiedMonth;
+        specifiedMonth = YearMonth.of(2024, Month.DECEMBER);
         contentScheduler.generateFullMonthSchedule(specifiedMonth);
+
+        specifiedMonth = YearMonth.of(2025, Month.FEBRUARY);
+        contentScheduler.generateFullMonthSchedule(specifiedMonth);
+
+        specifiedMonth = YearMonth.of(2025, Month.MAY);
+        contentScheduler.generateFullMonthSchedule(specifiedMonth);
+        contentScheduler.populateWeightsMap();
         contentScheduler.printWeightDistribution();
+        /*
         System.out.println(schedule.printScheduleMonth(specifiedMonth));
         schedule.saveToFile();
+        */
     }
 }
