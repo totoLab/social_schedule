@@ -71,7 +71,6 @@ public class Schedule {
             this.schedule = mapper.readValue(json, new TypeReference<Map<LocalDate, Content>>() {});
 
             System.out.println("Schedule successfully deserialized from " + file.getPath());
-            System.out.println("Deserialized Schedule: " + schedule.toString());
         } catch (JsonProcessingException e) {
             System.err.println("Error deserializing schedule: " + e.getMessage());
             e.printStackTrace();

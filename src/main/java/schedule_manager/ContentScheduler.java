@@ -9,37 +9,47 @@ import java.util.*;
 public class ContentScheduler {
     private final Schedule schedule;
     private final List<String> people;
-    private Map<String, Map<Type, Integer>> contentWeightMap;
+    private Map<String, Map<Type, Integer>> contentCountMap;
     private final Map<DayOfWeek, Content> weeklyContent;
 
     public ContentScheduler(Schedule schedule, List<String> people, String program) {
         this.schedule = schedule;
         this.people = new ArrayList<>(people);
-        populateWeightsMap();
+        populateCountMap();
         this.weeklyContent = parseWeeklySchedule(program);
 
     }
 
-    /*
-     *
-     */
-    public void populateWeightsMap() {
-        this.contentWeightMap = new HashMap<>();
+    public void populateCountMap() {
+        this.contentCountMap = new HashMap<>();
         for (String maker : people) {
-            if (!contentWeightMap.containsKey(maker)) {
-                contentWeightMap.put(maker, new HashMap<>());
+            if (!contentCountMap.containsKey(maker)) {
+                contentCountMap.put(maker, new HashMap<>());
             }
-            Map<Type, Integer> contentWeightMapPerson = contentWeightMap.get(maker);
+            Map<Type, Integer> contentWeightMapPerson = contentCountMap.get(maker);
             for (Type type : Type.values()) {
                 contentWeightMapPerson.put(type, 0);
             }
         }
         for (LocalDate date : schedule.getSchedule().keySet()) {
             Content content = schedule.getSchedule().get(date);
-            Map<Type, Integer> contentWeightMapPerson = contentWeightMap.get(content.getMaker());
-            int current = contentWeightMapPerson.get(content.getType());
-            contentWeightMapPerson.put(content.getType(), current + 1);
+            Map<Type, Integer> contentCountMapPerson = contentCountMap.get(content.getMaker());
+
+            int current = contentCountMapPerson.get(content.getType());
+            contentCountMapPerson.put(content.getType(), current + 1);
         }
+    }
+
+    void updateCount(Content content) {
+        Content toRemove = schedule.getSchedule().get(content.getDate());
+        Map<Type, Integer> contentCountMapPerson = contentCountMap.get(content.getMaker());
+        int current;
+
+        current = contentCountMapPerson.get(toRemove.getType());
+        contentCountMapPerson.put(toRemove.getType(), current - 1);
+
+        current = contentCountMapPerson.get(content.getType());
+        contentCountMapPerson.put(content.getType(), current + 1);
     }
 
     /**
@@ -65,11 +75,11 @@ public class ContentScheduler {
     }
 
     private int getCount(String maker) {
-        return contentWeightMap.get(maker).values().stream().mapToInt(Integer::intValue).sum();
+        return contentCountMap.get(maker).values().stream().mapToInt(Integer::intValue).sum();
     }
 
     private int getWeight(String maker) {
-        return contentWeightMap.get(maker)
+        return contentCountMap.get(maker)
                 .entrySet()
                 .stream()
                 .mapToInt(entry -> entry.getValue() * Content.calculateWeight(entry.getKey()))
@@ -83,7 +93,7 @@ public class ContentScheduler {
         int minWeight = Integer.MAX_VALUE;
 
         for (String maker : people) {
-            Map<Type, Integer> makerContent = contentWeightMap.get(maker);
+            Map<Type, Integer> makerContent = contentCountMap.get(maker);
             int weight = makerContent.get(type);
 
             if (weight == minWeight) {
@@ -110,9 +120,8 @@ public class ContentScheduler {
         }
 
         content.setMaker(chosenMaker);
-        Map<Type, Integer> makerContent = contentWeightMap.get(chosenMaker);
+        updateCount(content);
         schedule.addEntry(content.getDate(), content);
-        makerContent.put(type, makerContent.get(type) + 1);
     }
 
 
@@ -137,14 +146,14 @@ public class ContentScheduler {
         System.out.println("Current weight distribution:");
         for (String person : people) {
             String msg = String.format(
-                    "%s: %s - total count: %d, total weight: %d", person, contentWeightMap.get(person), getCount(person), getWeight(person)
+                    "%s: %s - total count: %d, total weight: %d", person, contentCountMap.get(person), getCount(person), getWeight(person)
             );
             System.out.println(msg);
         }
     }
 
     public static void main(String[] args) {
-        Schedule schedule = new Schedule("schedule.json");
+        Schedule schedule = new Schedule("schedule_test.json");
 
         List<String> people = Arrays.asList("Antonio", "Sharon", "Desiree", "Sara", "Marta", "Caterina", "Alessia", "Ines");
         String weeklySchedule = "POST Monday, RIASSUNTO Tuesday, STORIA Wednesday, STORIA Thursday, LOCANDINA Friday, REEL Saturday, STORIA Sunday";
@@ -159,11 +168,14 @@ public class ContentScheduler {
 
         specifiedMonth = YearMonth.of(2025, Month.MAY);
         contentScheduler.generateFullMonthSchedule(specifiedMonth);
-        contentScheduler.populateWeightsMap();
+
         contentScheduler.printWeightDistribution();
+        System.out.println("-------------");
+        contentScheduler.populateCountMap();
+        contentScheduler.printWeightDistribution();
+
         /*
         System.out.println(schedule.printScheduleMonth(specifiedMonth));
-        schedule.saveToFile();
         */
     }
 }
