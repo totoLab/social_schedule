@@ -1,15 +1,25 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import schedule_manager.ContentScheduler;
 import schedule_manager.Schedule;
+import visualization.CalendarImageGenerator;
 
+import java.io.File;
 import java.io.IOException;
-import java.time.Month;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.YearMonth;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
+        Config config = new Config("config.json");
+        config.deserialize();
+    }
+
+    void wholeYear() throws IOException {
 
         Schedule schedule = new Schedule("schedule.json");
 
