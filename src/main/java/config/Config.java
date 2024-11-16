@@ -1,3 +1,5 @@
+package config;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,7 +16,8 @@ import java.util.*;
 
 public class Config {
 
-    List<Map<String, String>> people;
+    List<Map<String, String>> peopleColors;
+    List<String> people;
     List<String> weeklySchedules;
     String firstWeekday;
     Map<String, String> formatting;
@@ -28,12 +31,14 @@ public class Config {
 
     @JsonCreator
     public Config(
-            @JsonProperty("people") List<Map<String, String>> people,
+            @JsonProperty("peopleColors") List<Map<String, String>> peopleColors,
             @JsonProperty("weeklySchedules") List<String> weeklySchedules,
             @JsonProperty("firstWeekday") String firstWeekday,
             @JsonProperty("formatting") Map<String, String> formatting) {
 
-        this.people = people;
+
+        this.peopleColors = peopleColors;
+        this.people = peopleColors.stream().map(o -> o.get("name")).toList();
         this.weeklySchedules = weeklySchedules;
         this.firstWeekday = firstWeekday;
         this.formatting = formatting;
@@ -94,12 +99,20 @@ public class Config {
         }
     }
 
-    public List<Map<String, String>> getPeople() {
+    public List<String> getPeople() {
         return people;
     }
 
-    public void setPeople(List<Map<String, String>> people) {
+    public void setPeople(List<String> people) {
         this.people = people;
+    }
+
+    public List<Map<String, String>> getPeopleColors() {
+        return peopleColors;
+    }
+
+    public void setPeopleColors(List<Map<String, String>> peopleColors) {
+        this.peopleColors = peopleColors;
     }
 
     public List<String> getWeeklySchedules() {
@@ -165,7 +178,7 @@ public class Config {
 
         config.setFirstWeekday("Tuesday");
 
-        config.setPeople(peopleMaps);
+        config.setPeopleColors(peopleMaps);
         config.setWeeklySchedules(Arrays.asList(weeklySchedules));
         config.serialize();
     }
