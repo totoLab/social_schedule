@@ -41,12 +41,15 @@ public class ContentScheduler {
     }
 
     void updateCount(Content content) {
-        Content toRemove = schedule.getSchedule().get(content.getDate());
-        Map<Type, Integer> contentCountMapPerson = contentCountMap.get(content.getMaker());
         int current;
+        Map<Type, Integer> contentCountMapPerson = contentCountMap.get(content.getMaker());
 
-        current = contentCountMapPerson.get(toRemove.getType());
-        contentCountMapPerson.put(toRemove.getType(), current - 1);
+        if (schedule.getSchedule().containsKey(content.getDate())) {
+            Content toRemove = schedule.getSchedule().get(content.getDate());
+
+            current = contentCountMapPerson.get(toRemove.getType());
+            contentCountMapPerson.put(toRemove.getType(), current - 1);
+        }
 
         current = contentCountMapPerson.get(content.getType());
         contentCountMapPerson.put(content.getType(), current + 1);
@@ -159,23 +162,11 @@ public class ContentScheduler {
         String weeklySchedule = "POST Monday, RIASSUNTO Tuesday, STORIA Wednesday, STORIA Thursday, LOCANDINA Friday, REEL Saturday, STORIA Sunday";
 
         ContentScheduler contentScheduler = new ContentScheduler(schedule, people, weeklySchedule);
-        YearMonth specifiedMonth;
-        specifiedMonth = YearMonth.of(2024, Month.DECEMBER);
-        contentScheduler.generateFullMonthSchedule(specifiedMonth);
-
-        specifiedMonth = YearMonth.of(2025, Month.FEBRUARY);
-        contentScheduler.generateFullMonthSchedule(specifiedMonth);
-
-        specifiedMonth = YearMonth.of(2025, Month.MAY);
-        contentScheduler.generateFullMonthSchedule(specifiedMonth);
-
-        contentScheduler.printWeightDistribution();
-        System.out.println("-------------");
         contentScheduler.populateCountMap();
         contentScheduler.printWeightDistribution();
 
-        /*
-        System.out.println(schedule.printScheduleMonth(specifiedMonth));
-        */
+        contentScheduler.generateFullMonthSchedule(YearMonth.of(2025, Month.AUGUST));
+        contentScheduler.printWeightDistribution();
+
     }
 }
