@@ -1,3 +1,5 @@
+package visualization;
+
 import schedule_manager.Content;
 import schedule_manager.Schedule;
 
