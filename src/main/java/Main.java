@@ -1,14 +1,9 @@
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import config.Config;
 import schedule_manager.ContentScheduler;
 import schedule_manager.Schedule;
 import visualization.CalendarImageGenerator;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.YearMonth;
 import java.util.*;
 
@@ -22,11 +17,9 @@ public class Main {
     void wholeYear() throws IOException {
 
         Schedule schedule = new Schedule("schedule.json");
+        Config config = new Config("config.json");
 
-        List<String> people = Arrays.asList("Antonio", "Sharon", "Desiree", "Sara", "Marta", "Caterina", "Alessia", "Ines");
-        String weeklySchedule = "POST Monday, RIASSUNTO Tuesday, STORIA Wednesday, STORIA Thursday, LOCANDINA Friday, REEL Saturday, STORIA Sunday";
-
-        ContentScheduler contentScheduler = new ContentScheduler(schedule, people, weeklySchedule);
+        ContentScheduler contentScheduler = new ContentScheduler(schedule, config.getPeople(), config.getWeeklySchedules().getFirst());
 
         int year = 2025;
         for (int i = 1; i < 13; i++) {
@@ -37,7 +30,7 @@ public class Main {
             schedule.saveToFile();
         }
 
-        CalendarImageGenerator generator = new CalendarImageGenerator();
+        CalendarImageGenerator generator = new CalendarImageGenerator(config);
         for (int i = 1; i < 13; i++) {
             YearMonth specifiedMonth = YearMonth.of(year, i);
             String filename = String.format("%s_%d_calendar.png", specifiedMonth.getMonth().toString().toLowerCase(), specifiedMonth.getYear());

@@ -1,5 +1,7 @@
 package schedule_manager;
 
+import config.Config;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
@@ -157,11 +159,10 @@ public class ContentScheduler {
 
     public static void main(String[] args) {
         Schedule schedule = new Schedule("schedule_test.json");
+        Config config = new Config("config.json");
+        config.deserialize();
 
-        List<String> people = Arrays.asList("Antonio", "Sharon", "Desiree", "Sara", "Marta", "Caterina", "Alessia", "Ines");
-        String weeklySchedule = "POST Monday, RIASSUNTO Tuesday, STORIA Wednesday, STORIA Thursday, LOCANDINA Friday, REEL Saturday, STORIA Sunday";
-
-        ContentScheduler contentScheduler = new ContentScheduler(schedule, people, weeklySchedule);
+        ContentScheduler contentScheduler = new ContentScheduler(schedule, config.getPeople(), config.getWeeklySchedules().getFirst());
         contentScheduler.populateCountMap();
         contentScheduler.printWeightDistribution();
 

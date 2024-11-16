@@ -1,5 +1,6 @@
 package visualization;
 
+import config.Config;
 import schedule_manager.Content;
 import schedule_manager.Schedule;
 
@@ -10,47 +11,56 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import javax.imageio.ImageIO;
 
 public class CalendarImageGenerator {
 
-    // Define constants for layout and styling
-    private static final int CELL_SIZE = 140;
-    private static final int TITLE_HEIGHT = 80;
-    private static final int HEADER_HEIGHT = 50;
-    private static final int CONTAINER_HEIGHT = TITLE_HEIGHT + HEADER_HEIGHT;
-    private static final int NUM_COLUMNS = 7; // 7 days of the week
-    private static final int NUM_ROWS = 6; // Maximum 6 rows for a month
-    private static final int CALENDAR_WIDTH = CELL_SIZE * NUM_COLUMNS;
-    private static final int CALENDAR_HEIGHT = (CELL_SIZE * NUM_ROWS) + CONTAINER_HEIGHT;
-    private static final int DATE_X_OFFSET = 20;
-    private static final int CONTENT_Y_OFFSET = 40;
+    final Config config;
 
-    private static final String DEFAULT_FONT_NAME = "Cantarell";
-    private static final Font TITLE_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 40);
-    private static final Font HEADER_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 26);
-    private static final Font DATE_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 21);
+    // Define constants for layout and styling
+    private final int CELL_SIZE = 140;
+    private final int TITLE_HEIGHT = 80;
+    private final int HEADER_HEIGHT = 50;
+    private final int CONTAINER_HEIGHT = TITLE_HEIGHT + HEADER_HEIGHT;
+    private final int NUM_COLUMNS = 7; // 7 days of the week
+    private final int NUM_ROWS = 6; // Maximum 6 rows for a month
+    private final int CALENDAR_WIDTH = CELL_SIZE * NUM_COLUMNS;
+    private final int CALENDAR_HEIGHT = (CELL_SIZE * NUM_ROWS) + CONTAINER_HEIGHT;
+    private final int CONTENT_Y_OFFSET = 40;
+
+    private String DEFAULT_FONT_NAME;
+    private Font TITLE_FONT;
+    private Font HEADER_FONT;
+    private Font DATE_FONT;
 
     private final Map<String, Color> makerColors = new HashMap<>();
 
     // Constructor initializes colors for makers
-    public CalendarImageGenerator() {
+    public CalendarImageGenerator(Config config) {
+        this.config = config;
+        Map<String, String> formatting = config.getFormatting();
+        setFormatting(formatting);
         initializeMakerColors();
+    }
+
+    void setFormatting(Map<String, String> formatting) {
+        this.DEFAULT_FONT_NAME = formatting.get("font");
+        this.TITLE_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 40);
+        this.HEADER_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 26);
+        this.DATE_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 21);
     }
 
     /**
      * Initializes the maker colors by mapping each person to a specific color.
      */
     private void initializeMakerColors() {
-        List<String> people = Arrays.asList("Antonio", "Sharon", "Desiree", "Sara", "Marta", "Caterina", "Alessia", "Ines");
-        List<String> colorHexValues = Arrays.asList("306BAD", "F9B9F2", "FFAD05", "7CAFC4", "BC412B", "DBAD6A", "59A96A", "DBEFBC");
+        List<Map<String, String>> peopleColors = config.getPeopleColors();
 
-        for (int i = 0; i < people.size(); i++) {
-            makerColors.put(people.get(i), Color.decode("#" + colorHexValues.get(i)));
+        for (int i = 0; i < peopleColors.size(); i++) {
+            Map<String, String> entry = peopleColors.get(i);
+            makerColors.put(entry.get("name"), Color.decode("#" + entry.get("color")));
         }
     }
 
@@ -209,7 +219,8 @@ public class CalendarImageGenerator {
 
     public static void main(String[] args) throws IOException {
         Schedule schedule = new Schedule("schedule.json");
-        CalendarImageGenerator generator = new CalendarImageGenerator();
+        Config config = new Config("config.json");
+        CalendarImageGenerator generator = new CalendarImageGenerator(config);
 
         YearMonth yearMonth = YearMonth.of(2024, 12);
         generator.generateCalendarImage(schedule.getSchedule(), yearMonth.getYear(), yearMonth.getMonth(), String.format("%s_%d_calendar.png",  yearMonth.getMonth().toString().toLowerCase(), yearMonth.getYear()));
