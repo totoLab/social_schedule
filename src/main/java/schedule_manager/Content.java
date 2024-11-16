@@ -1,6 +1,7 @@
 package schedule_manager;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.DayOfWeek;
@@ -17,14 +18,12 @@ public class Content {
     @JsonCreator
     public Content(
             @JsonProperty("type") Type type,
-            @JsonProperty("weight") int weight,
-            @JsonProperty("day") DayOfWeek day,
             @JsonProperty("date") LocalDate date,
             @JsonProperty("maker") String maker
     ) {
         this.type = type;
-        this.weight = weight;
-        this.day = day;
+        this.weight = calculateWeight(type);
+        this.day = date.getDayOfWeek();
         this.date = date;
         this.maker = maker;
     }
@@ -39,10 +38,12 @@ public class Content {
         return type;
     }
 
+    @JsonIgnore
     public int getWeight() {
         return weight;
     }
 
+    @JsonIgnore
     public DayOfWeek getDay() {
         return day;
     }
