@@ -27,6 +27,8 @@ public class Config {
 
     public Config(String filePath) {
         this.file = new File(filePath);
+        if (!file.exists()) throw new IllegalArgumentException("Config file does not exist");
+        deserialize();
     }
 
     @JsonCreator
@@ -35,7 +37,6 @@ public class Config {
             @JsonProperty("weeklySchedules") List<String> weeklySchedules,
             @JsonProperty("firstWeekday") String firstWeekday,
             @JsonProperty("formatting") Map<String, String> formatting) {
-
 
         this.peopleColors = peopleColors;
         this.people = peopleColors.stream().map(o -> o.get("name")).toList();
@@ -84,7 +85,7 @@ public class Config {
             Config configData = mapper.readValue(json, new TypeReference<Config>() {});
 
             // Copy deserialized data to the current object's fields
-            this.people = configData.people;
+            this.peopleColors = configData.peopleColors;
             this.weeklySchedules = configData.weeklySchedules;
             this.firstWeekday = configData.firstWeekday;
             this.formatting = configData.formatting;
