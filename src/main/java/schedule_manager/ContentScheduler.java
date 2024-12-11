@@ -25,14 +25,14 @@ public class ContentScheduler {
     public void populateCountMap() {
         this.contentCountMap = new HashMap<>();
         for (String maker : people) {
-            if (!contentCountMap.containsKey(maker)) {
-                contentCountMap.put(maker, new HashMap<>());
-            }
+            contentCountMap.put(maker, new HashMap<>());
             Map<Type, Integer> contentWeightMapPerson = contentCountMap.get(maker);
             for (Type type : Type.values()) {
                 contentWeightMapPerson.put(type, 0);
             }
         }
+
+        // Populate existing schedule counts
         for (LocalDate date : schedule.getSchedule().keySet()) {
             Content content = schedule.getSchedule().get(date);
             Map<Type, Integer> contentCountMapPerson = contentCountMap.get(content.getMaker());
@@ -40,6 +40,41 @@ public class ContentScheduler {
             int current = contentCountMapPerson.get(content.getType());
             contentCountMapPerson.put(content.getType(), current + 1);
         }
+    }
+
+    private void assignContent(Content content) {
+        Type type = content.getType();
+        List<String> eligibleMakers = new ArrayList<>();
+        int minTypeWeight = Integer.MAX_VALUE;
+
+        // First, find makers with the minimum weight for this specific content type
+        for (String maker : people) {
+            Map<Type, Integer> makerContent = contentCountMap.get(maker);
+            int typeWeight = makerContent.get(type);
+
+            if (typeWeight < minTypeWeight) {
+                minTypeWeight = typeWeight;
+                eligibleMakers.clear();
+                eligibleMakers.add(maker);
+            } else if (typeWeight == minTypeWeight) {
+                eligibleMakers.add(maker);
+            }
+        }
+
+        // If multiple makers have the same minimum type weight,
+        // choose based on overall content weight
+        String chosenMaker;
+        if (eligibleMakers.size() > 1) {
+            chosenMaker = eligibleMakers.stream()
+                    .min(Comparator.comparingInt(this::getWeight))
+                    .orElse(eligibleMakers.getFirst());
+        } else {
+            chosenMaker = eligibleMakers.getFirst();
+        }
+
+        content.setMaker(chosenMaker);
+        updateCount(content);
+        schedule.addEntry(content.getDate(), content);
     }
 
     void updateCount(Content content) {
@@ -91,44 +126,25 @@ public class ContentScheduler {
                 .sum();
     }
 
-
-    private void assignContent(Content content) {
-        Type type = content.getType();
-        List<String> chosenMakers = new ArrayList<>();
-        int minWeight = Integer.MAX_VALUE;
-
-        for (String maker : people) {
-            Map<Type, Integer> makerContent = contentCountMap.get(maker);
-            int weight = makerContent.get(type);
-
-            if (weight == minWeight) {
-                chosenMakers.add(maker);
-            } else if (weight < minWeight) {
-                minWeight = weight;
-                chosenMakers.clear();
-                chosenMakers.add(maker);
+    public void printWeightDistribution() {
+        System.out.println("Current weight distribution:");
+        for (String person : people) {
+            Map<Type, Integer> personContentCount = contentCountMap.get(person);
+            StringBuilder typeBreakdown = new StringBuilder();
+            for (Type type : Type.values()) {
+                typeBreakdown.append(String.format("%s:%d ", type, personContentCount.get(type)));
             }
-        }
 
-        minWeight = Integer.MAX_VALUE;
-        String chosenMaker = null;
-        if (chosenMakers.size() > 1) {
-            for (String maker : chosenMakers) {
-                int weight = getCount(maker);
-                if (weight < minWeight) {
-                    minWeight = weight;
-                    chosenMaker = maker;
-                }
-            }
-        } else {
-            chosenMaker = chosenMakers.getFirst();
+            String msg = String.format(
+                    "%s: %s - total count: %d, total weight: %d",
+                    person,
+                    typeBreakdown,
+                    getCount(person),
+                    getWeight(person)
+            );
+            System.out.println(msg);
         }
-
-        content.setMaker(chosenMaker);
-        updateCount(content);
-        schedule.addEntry(content.getDate(), content);
     }
-
 
     public void generateFullMonthSchedule(YearMonth yearMonth) {
         int daysInMonth = yearMonth.lengthOfMonth();
@@ -147,26 +163,14 @@ public class ContentScheduler {
         }
     }
 
-    public void printWeightDistribution() {
-        System.out.println("Current weight distribution:");
-        for (String person : people) {
-            String msg = String.format(
-                    "%s: %s - total count: %d, total weight: %d", person, contentCountMap.get(person), getCount(person), getWeight(person)
-            );
-            System.out.println(msg);
-        }
-    }
-
     public static void main(String[] args) {
-        Schedule schedule = new Schedule("schedule_test.json");
-        Config config = new Config("config.json");
-        config.deserialize();
-
+        Schedule schedule = new Schedule("schedule_rcy.json");
+        Config config = new Config("config_rcy.json");
         ContentScheduler contentScheduler = new ContentScheduler(schedule, config.getPeople(), config.getWeeklySchedules().getFirst());
         contentScheduler.populateCountMap();
         contentScheduler.printWeightDistribution();
 
-        contentScheduler.generateFullMonthSchedule(YearMonth.of(2025, Month.AUGUST));
+        contentScheduler.generateFullMonthSchedule(YearMonth.of(2025, Month.FEBRUARY));
         contentScheduler.printWeightDistribution();
 
     }
