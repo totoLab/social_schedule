@@ -156,7 +156,7 @@ public class Config {
         return builder.toString();
     }
 
-    public static void main(String[] args) {
+    static void generate_config() {
         List<String> people = Arrays.asList("Antonio", "Sharon", "Desiree", "Sara", "Marta", "Caterina", "Alessia", "Ines");
         List<String> colorHexValues = Arrays.asList("306BAD", "F9B9F2", "FFAD05", "7CAFC4", "BC412B", "DBAD6A", "59A96A", "DBEFBC");
         List<Map<String, String>> peopleMaps = new ArrayList<>();

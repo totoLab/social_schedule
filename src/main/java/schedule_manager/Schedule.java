@@ -121,7 +121,6 @@ public class Schedule {
     }
 
     public static void main(String[] args) {
-        Schedule schedule = new Schedule("schedule.json");
-
+        Schedule schedule = new Schedule("schedule_rcy.json");
     }
 }
