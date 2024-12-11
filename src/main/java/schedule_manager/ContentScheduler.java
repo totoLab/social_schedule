@@ -12,15 +12,20 @@ public class ContentScheduler {
     private final Schedule schedule;
     private final List<String> people;
     private Map<String, Map<Type, Integer>> contentCountMap;
-    private final Map<DayOfWeek, Content> weeklyContent;
+    private Map<DayOfWeek, Content> weeklyContent;
+    private String currentWeeklySchedule;
+    private final List<String> weeklySchedules;
 
-    public ContentScheduler(Schedule schedule, List<String> people, String program) {
+    public ContentScheduler(Schedule schedule, List<String> people, List<String> weeklySchedules, int currentWeeklySchedule) {
         this.schedule = schedule;
         this.people = new ArrayList<>(people);
-        populateCountMap();
-        this.weeklyContent = parseWeeklySchedule(program);
+        this.weeklySchedules = new ArrayList<>(weeklySchedules);
+        this.currentWeeklySchedule = weeklySchedules.get(currentWeeklySchedule);
 
+        populateCountMap();
+        this.weeklyContent = parseWeeklySchedule(this.currentWeeklySchedule);
     }
+
 
     public void populateCountMap() {
         this.contentCountMap = new HashMap<>();
@@ -114,6 +119,18 @@ public class ContentScheduler {
         return contentList;
     }
 
+    public void switchWeeklySchedule(String newWeeklySchedule) {
+        if (!weeklySchedules.contains(newWeeklySchedule)) {
+            throw new IllegalArgumentException("New weekly schedule must be in the list of weekly schedules");
+        }
+        this.currentWeeklySchedule = newWeeklySchedule;
+        this.weeklyContent = parseWeeklySchedule(newWeeklySchedule);
+    }
+
+    public String getCurrentWeeklySchedule() {
+        return currentWeeklySchedule;
+    }
+
     private int getCount(String maker) {
         return contentCountMap.get(maker).values().stream().mapToInt(Integer::intValue).sum();
     }
@@ -150,11 +167,20 @@ public class ContentScheduler {
         int daysInMonth = yearMonth.lengthOfMonth();
         LocalDate firstDayOfMonth = yearMonth.atDay(1);
 
-        // Loop through each day of the month
+        int scheduleIndex = weeklySchedules.indexOf(currentWeeklySchedule);
+        Map<DayOfWeek, Content> currentWeeklyContent = weeklyContent;
+
         for (int day = 1; day <= daysInMonth; day++) {
             LocalDate date = firstDayOfMonth.withDayOfMonth(day);
+
+            if (date.getDayOfWeek() == DayOfWeek.MONDAY) {
+                scheduleIndex = (scheduleIndex + 1) % weeklySchedules.size();
+                currentWeeklySchedule = weeklySchedules.get(scheduleIndex);
+                currentWeeklyContent = parseWeeklySchedule(currentWeeklySchedule);
+            }
+
             DayOfWeek dayOfWeek = date.getDayOfWeek();
-            final Content content = weeklyContent.get(dayOfWeek);
+            final Content content = currentWeeklyContent.get(dayOfWeek);
             if (content != null) {
                 final Content scheduledContent = new Content(content.getType(), dayOfWeek);
                 scheduledContent.setDate(date);
@@ -164,13 +190,17 @@ public class ContentScheduler {
     }
 
     public static void main(String[] args) {
-        Schedule schedule = new Schedule("schedule_rcy.json");
+        Schedule schedule = new Schedule("schedule_test.json");
         Config config = new Config("config_rcy.json");
-        ContentScheduler contentScheduler = new ContentScheduler(schedule, config.getPeople(), config.getWeeklySchedules().getFirst());
+        ContentScheduler contentScheduler = new ContentScheduler(schedule, config.getPeople(), config.getWeeklySchedules(), 0);
         contentScheduler.populateCountMap();
         contentScheduler.printWeightDistribution();
 
+        contentScheduler.generateFullMonthSchedule(YearMonth.of(2025, Month.JANUARY));
+        contentScheduler.printWeightDistribution();
         contentScheduler.generateFullMonthSchedule(YearMonth.of(2025, Month.FEBRUARY));
+        contentScheduler.printWeightDistribution();
+        contentScheduler.generateFullMonthSchedule(YearMonth.of(2025, Month.MARCH));
         contentScheduler.printWeightDistribution();
 
     }

@@ -12,9 +12,9 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        YearMonth startMonth = YearMonth.of(2025, 7);
-        YearMonth endMonth = YearMonth.of(2025, 12);
-        Schedule schedule = new Schedule("schedule_test.json");
+        YearMonth startMonth = YearMonth.of(2025, 2);
+        YearMonth endMonth = YearMonth.of(2025, 6);
+        Schedule schedule = new Schedule("schedule_rcy.json");
         Config config = new Config("config_rcy.json");
         generateScheduleAndCalendar(config, schedule, startMonth, endMonth);
     }
@@ -26,7 +26,7 @@ public class Main {
     }
 
     static void generateScheduleAndCalendar(Config config, Schedule schedule, YearMonth startMonth, YearMonth endMonth) throws IOException {
-        ContentScheduler contentScheduler = new ContentScheduler(schedule, config.getPeople(), config.getWeeklySchedules().getFirst());
+        ContentScheduler contentScheduler = new ContentScheduler(schedule, config.getPeople(), config.getWeeklySchedules(), 0);
 
         // Validate input
         if (startMonth.isAfter(endMonth)) {
