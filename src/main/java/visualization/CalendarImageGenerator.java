@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
@@ -118,8 +119,9 @@ public class CalendarImageGenerator {
     private void drawTitle(Graphics2D g2d, int year, Month month) {
         g2d.setFont(TITLE_FONT);
         g2d.setColor(Color.BLACK);
+        String[] months = Arrays.asList("Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre").toArray(new String[0]);
 
-        String title = String.format("Calendario RCY %s %d", month, year);
+        String title = String.format("Calendario RCY %s %d", months[month.getValue() - 1], year);
         FontMetrics titleMetrics = g2d.getFontMetrics();
         int x = (CALENDAR_WIDTH - titleMetrics.stringWidth(title)) / 2;
         g2d.drawString(title, x, TITLE_HEIGHT / 3 * 2);
@@ -129,14 +131,25 @@ public class CalendarImageGenerator {
      * Draws the days of the week header (Sun, Mon, Tue, ...) at the top of the calendar.
      */
     private void drawDaysOfWeekHeader(Graphics2D g2d) {
-        String[] daysOfWeek = {"Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"};
+        String[] daysOfWeek = {"Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"};
+
+        // Get the configured first day of the week
+        DayOfWeek configuredFirstDay = DayOfWeek.valueOf(config.getFirstWeekday().toUpperCase());
+
+        // Shift the days of week array
+        String[] shiftedDaysOfWeek = new String[7];
+        for (int i = 0; i < 7; i++) {
+            int shiftedIndex = (i + configuredFirstDay.getValue() - 1) % 7;
+            shiftedDaysOfWeek[i] = daysOfWeek[shiftedIndex];
+        }
+
         g2d.setFont(HEADER_FONT);
         g2d.setColor(Color.BLACK);
 
         FontMetrics headerMetrics = g2d.getFontMetrics();
         for (int i = 0; i < NUM_COLUMNS; i++) {
-            int x = i * CELL_SIZE + (CELL_SIZE - headerMetrics.stringWidth(daysOfWeek[i])) / 2;
-            g2d.drawString(daysOfWeek[i], x, TITLE_HEIGHT + HEADER_HEIGHT / 3 * 2);
+            int x = i * CELL_SIZE + (CELL_SIZE - headerMetrics.stringWidth(shiftedDaysOfWeek[i])) / 2;
+            g2d.drawString(shiftedDaysOfWeek[i], x, TITLE_HEIGHT + HEADER_HEIGHT / 3 * 2);
         }
     }
 
@@ -149,11 +162,16 @@ public class CalendarImageGenerator {
 
         LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
         int lengthOfMonth = month.length(firstDayOfMonth.isLeapYear());
-        int startDay = firstDayOfMonth.getDayOfWeek().getValue() % 7;
+
+        // Get the configured first day of the week
+        DayOfWeek configuredFirstDay = DayOfWeek.valueOf(config.getFirstWeekday().toUpperCase());
+
+        // Calculate the offset to align the calendar with the configured first day
+        int offset = 7 - (configuredFirstDay.getValue() - firstDayOfMonth.getDayOfWeek().getValue() + 7) % 7;
 
         for (int day = 1; day <= lengthOfMonth; day++) {
-            int x = (startDay + day - 1) % NUM_COLUMNS;
-            int y = (startDay + day - 1) / NUM_COLUMNS;
+            int x = (day - 1 + offset) % NUM_COLUMNS;
+            int y = (day - 1 + offset) / NUM_COLUMNS;
 
             // Draw each calendar day with a border
             LocalDate currentDate = LocalDate.of(year, month, day);
