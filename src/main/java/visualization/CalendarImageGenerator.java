@@ -34,6 +34,7 @@ public class CalendarImageGenerator {
     private Font TITLE_FONT;
     private Font HEADER_FONT;
     private Font DATE_FONT;
+    private Font CONTENT_FONT;
 
     private final Map<String, Color> makerColors = new HashMap<>();
 
@@ -49,7 +50,8 @@ public class CalendarImageGenerator {
         this.DEFAULT_FONT_NAME = formatting.get("font");
         this.TITLE_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 40);
         this.HEADER_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 26);
-        this.DATE_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 21);
+        this.DATE_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 16);
+        this.CONTENT_FONT = new Font(DEFAULT_FONT_NAME, Font.BOLD, 23);
     }
 
     /**
@@ -143,6 +145,7 @@ public class CalendarImageGenerator {
      */
     private void drawCalendarDays(Graphics2D g2d, Map<LocalDate, Content> schedule, int year, Month month) {
         FontMetrics dateMetrics = g2d.getFontMetrics(DATE_FONT);
+        FontMetrics contentMetrics = g2d.getFontMetrics(CONTENT_FONT);
 
         LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
         int lengthOfMonth = month.length(firstDayOfMonth.isLeapYear());
@@ -158,7 +161,7 @@ public class CalendarImageGenerator {
 
             if (content != null) {
                 drawDayCell(g2d, x, y, day, dateMetrics, makerColors.get(content.getMaker()));
-                drawContent(g2d, x, y, content, dateMetrics);
+                drawContent(g2d, x, y, content, dateMetrics, contentMetrics);
             } else {
                 drawDayCell(g2d, x, y, day, dateMetrics, Color.LIGHT_GRAY);
             }
@@ -183,7 +186,7 @@ public class CalendarImageGenerator {
     /**
      * Draws the content in a cell if it exists (maker color and content type).
      */
-    private void drawContent(Graphics2D g2d, int x, int y, Content content, FontMetrics dateMetrics) {
+    private void drawContent(Graphics2D g2d, int x, int y, Content content, FontMetrics dateMetrics, FontMetrics contentMetrics) {
         String maker = content.getMaker();
         g2d.setFont(DATE_FONT);
         Color makerColor = makerColors.get(maker);
@@ -196,8 +199,9 @@ public class CalendarImageGenerator {
         int contentX = x * CELL_SIZE + (CELL_SIZE - dateMetrics.stringWidth(contentType)) / 2;
         g2d.drawString(contentType, contentX, y * CELL_SIZE + CONTAINER_HEIGHT + CONTENT_Y_OFFSET * 2);
 
+        g2d.setFont(CONTENT_FONT);
         String contentMaker = content.getMaker();
-        contentX = x * CELL_SIZE + (CELL_SIZE - dateMetrics.stringWidth(contentMaker)) / 2;
+        contentX = x * CELL_SIZE + (CELL_SIZE - contentMetrics.stringWidth(contentMaker)) / 2;
         g2d.drawString(contentMaker, contentX, y * CELL_SIZE + CONTAINER_HEIGHT + CONTENT_Y_OFFSET * 3);
     }
 
@@ -218,11 +222,11 @@ public class CalendarImageGenerator {
     }
 
     public static void main(String[] args) throws IOException {
-        Schedule schedule = new Schedule("schedule.json");
-        Config config = new Config("config.json");
+        Schedule schedule = new Schedule("schedule_rcy.json");
+        Config config = new Config("config_rcy.json");
         CalendarImageGenerator generator = new CalendarImageGenerator(config);
 
-        YearMonth yearMonth = YearMonth.of(2024, 12);
+        YearMonth yearMonth = YearMonth.of(2025, 1);
         generator.generateCalendarImage(schedule.getSchedule(), yearMonth.getYear(), yearMonth.getMonth(), String.format("%s_%d_calendar.png",  yearMonth.getMonth().toString().toLowerCase(), yearMonth.getYear()));
     }
 }
