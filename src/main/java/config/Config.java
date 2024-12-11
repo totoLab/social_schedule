@@ -89,6 +89,7 @@ public class Config {
             this.weeklySchedules = configData.weeklySchedules;
             this.firstWeekday = configData.firstWeekday;
             this.formatting = configData.formatting;
+            this.people = this.peopleColors.stream().map(o -> o.get("name")).toList();
 
             System.out.println("Config successfully deserialized from " + file.getPath());
         } catch (JsonProcessingException e) {
