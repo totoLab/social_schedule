@@ -11,7 +11,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class Config {
@@ -185,4 +187,13 @@ public class Config {
         config.serialize();
     }
 
+    public static String getPathFromResource(String resource) throws URISyntaxException {
+        return Paths.get(Thread.currentThread().getContextClassLoader().getResource(resource).toURI()).toString();
+    }
+
+    public static void main(String[] args) throws URISyntaxException {
+        String resourceName = "config_rcy.json";
+        String path = getPathFromResource(resourceName);
+        Config config = new Config(path);
+    }
 }

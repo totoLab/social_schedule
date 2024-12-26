@@ -239,12 +239,20 @@ public class CalendarImageGenerator {
         ImageIO.write(image, "PNG", outputFile);
     }
 
-    static void generateImage() throws IOException {
-        Schedule schedule = new Schedule("schedule_rcy.json");
-        Config config = new Config("config_rcy.json");
+    static void generateImage(Config config, Schedule schedule, YearMonth yearMonth) throws IOException {
         CalendarImageGenerator generator = new CalendarImageGenerator(config);
-
-        YearMonth yearMonth = YearMonth.of(2025, 1);
         generator.generateCalendarImage(schedule.getSchedule(), yearMonth.getYear(), yearMonth.getMonth(), String.format("schedule_images/%s_%d_calendar.png",  yearMonth.getMonth().toString().toLowerCase(), yearMonth.getYear()));
+    }
+
+    public static void main(String[] args) {
+        try {
+            Schedule schedule = new Schedule(Config.getPathFromResource("schedule_rcy.json"));
+            Config config = new Config(Config.getPathFromResource("config_rcy.json"));
+            YearMonth yearMonth = YearMonth.of(2025, 1);
+
+            generateImage(config, schedule, yearMonth);
+        } catch (Exception e) {
+            System.out.println("Couldn't generate image correctly: \n\t" + e.getMessage());
+        }
     }
 }
