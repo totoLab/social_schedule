@@ -190,18 +190,15 @@ public class ContentScheduler {
     }
 
     public static void main(String[] args) {
-        Schedule schedule = new Schedule("schedule_test.json");
-        Config config = new Config("config_rcy.json");
-        ContentScheduler contentScheduler = new ContentScheduler(schedule, config.getPeople(), config.getWeeklySchedules(), 0);
-        contentScheduler.populateCountMap();
-        contentScheduler.printWeightDistribution();
-
-        contentScheduler.generateFullMonthSchedule(YearMonth.of(2025, Month.JANUARY));
-        contentScheduler.printWeightDistribution();
-        contentScheduler.generateFullMonthSchedule(YearMonth.of(2025, Month.FEBRUARY));
-        contentScheduler.printWeightDistribution();
-        contentScheduler.generateFullMonthSchedule(YearMonth.of(2025, Month.MARCH));
-        contentScheduler.printWeightDistribution();
+        try {
+            Schedule schedule = new Schedule(Config.getPathFromResource("schedule_rcy.json"));
+            Config config = new Config(Config.getPathFromResource("config_rcy.json"));
+            ContentScheduler contentScheduler = new ContentScheduler(schedule, config.getPeople(), config.getWeeklySchedules(), 0);
+            contentScheduler.populateCountMap();
+            contentScheduler.printWeightDistribution();
+        } catch (Exception e) {
+            System.err.println("Couldn't update schedule correctly correctly: \n\t" + e.getMessage());
+        }
 
     }
 }

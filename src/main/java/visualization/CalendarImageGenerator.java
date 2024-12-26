@@ -248,11 +248,11 @@ public class CalendarImageGenerator {
         try {
             Schedule schedule = new Schedule(Config.getPathFromResource("schedule_rcy.json"));
             Config config = new Config(Config.getPathFromResource("config_rcy.json"));
-            YearMonth yearMonth = YearMonth.of(2025, 1);
+            YearMonth yearMonth = YearMonth.of(2025, 2);
 
             generateImage(config, schedule, yearMonth);
         } catch (Exception e) {
-            System.out.println("Couldn't generate image correctly: \n\t" + e.getMessage());
+            System.err.println("Couldn't generate image correctly: \n\t" + e.getMessage());
         }
     }
 }
