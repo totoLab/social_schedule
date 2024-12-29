@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ContentScheduler {
     private final Schedule schedule;
@@ -68,14 +69,15 @@ public class ContentScheduler {
 
         // If multiple makers have the same minimum type weight,
         // choose based on overall content weight
-        String chosenMaker;
-        if (eligibleMakers.size() > 1) {
-            chosenMaker = eligibleMakers.stream()
-                    .min(Comparator.comparingInt(this::getWeight))
-                    .orElse(eligibleMakers.getFirst());
-        } else {
-            chosenMaker = eligibleMakers.getFirst();
-        }
+        int minWeight = eligibleMakers.stream()
+                .mapToInt(this::getWeight)
+                .min()
+                .orElse(0);
+
+        List<String> minWeightMakers = eligibleMakers.stream()
+                .filter(maker -> getWeight(maker) == minWeight)
+                .collect(Collectors.toList());
+        String chosenMaker = minWeightMakers.get(new Random().nextInt(minWeightMakers.size()));
 
         content.setMaker(chosenMaker);
         updateCount(content);
