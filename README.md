@@ -1,4 +1,4 @@
-# Social Media Content Scheduler
+# Social Media schedule generator for teams
 
 A Java application that helps manage and schedule social media content across a team, with support for different content types, weekly schedules, and visual calendar generation.
 
