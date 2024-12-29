@@ -72,6 +72,7 @@ public class Content {
                 break;
             case POST:
             case LOCANDINA:
+            case TESTIMONIANZA:
                 weight = 2;
                 break;
             case REEL:
