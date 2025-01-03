@@ -246,8 +246,8 @@ public class CalendarImageGenerator {
 
     public static void main(String[] args) {
         try {
-            Schedule schedule = new Schedule(Config.getPathFromResource("schedule_rcy.json"));
-            Config config = new Config(Config.getPathFromResource("config_rcy.json"));
+            Schedule schedule = new Schedule("schedule_rcy.json");
+            Config config = new Config("config_rcy.json");
             YearMonth yearMonth = YearMonth.of(2025, 2);
 
             generateImage(config, schedule, yearMonth);
