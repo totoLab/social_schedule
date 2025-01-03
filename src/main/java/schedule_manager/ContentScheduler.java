@@ -1,13 +1,13 @@
 package schedule_manager;
 
 import config.Config;
+import utils.Utils;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.YearMonth;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.lang.Math.ceil;
 
 public class ContentScheduler {
     private final Schedule schedule;
@@ -16,6 +16,8 @@ public class ContentScheduler {
     private Map<DayOfWeek, Content> weeklyContent;
     private String currentWeeklySchedule;
     private final List<String> weeklySchedules;
+
+    Map<String, Integer> monthContentCounter;
 
     public ContentScheduler(Schedule schedule, List<String> people, List<String> weeklySchedules, int currentWeeklySchedule) {
         this.schedule = schedule;
@@ -53,8 +55,11 @@ public class ContentScheduler {
         List<String> eligibleMakers = new ArrayList<>();
         int minTypeWeight = Integer.MAX_VALUE;
 
+        int maxMonthlyContent = (int) ceil(31.0f / people.size());
+        List<String> nonMaxPeople = monthContentCounter.keySet().stream().filter(maker -> monthContentCounter.get(maker) < maxMonthlyContent).toList();
+
         // First, find makers with the minimum weight for this specific content type
-        for (String maker : people) {
+        for (String maker : nonMaxPeople) {
             Map<Type, Integer> makerContent = contentCountMap.get(maker);
             int typeWeight = makerContent.get(type);
 
@@ -169,6 +174,9 @@ public class ContentScheduler {
         int daysInMonth = yearMonth.lengthOfMonth();
         LocalDate firstDayOfMonth = yearMonth.atDay(1);
 
+        monthContentCounter = new HashMap<>();
+        for (String maker : people) { monthContentCounter.put(maker, 0); }
+
         int scheduleIndex = weeklySchedules.indexOf(currentWeeklySchedule);
         Map<DayOfWeek, Content> currentWeeklyContent = weeklyContent;
 
@@ -193,11 +201,17 @@ public class ContentScheduler {
 
     public static void main(String[] args) {
         try {
-            Schedule schedule = new Schedule(Config.getPathFromResource("schedule_rcy.json"));
-            Config config = new Config(Config.getPathFromResource("config_rcy.json"));
+            Schedule schedule = new Schedule("schedule_rcy.json");
+            Config config = new Config("config_rcy.json");
             ContentScheduler contentScheduler = new ContentScheduler(schedule, config.getPeople(), config.getWeeklySchedules(), 0);
-            contentScheduler.populateCountMap();
+            // contentScheduler.populateCountMap();
+            YearMonth dates = YearMonth.of(2025, 2);
+            contentScheduler.generateFullMonthSchedule(dates);
             contentScheduler.printWeightDistribution();
+            System.out.println(schedule.printScheduleMonth(dates));
+            if (Utils.yesNo(String.format("Do you want to save %s?", schedule.getFilename()))) {
+                schedule.saveToFile();
+            }
         } catch (Exception e) {
             System.err.println("Couldn't update schedule correctly correctly: \n\t" + e.getMessage());
         }

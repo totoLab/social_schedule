@@ -44,7 +44,8 @@ public class Main {
         // Generate calendar images for the specified period
         CalendarImageGenerator generator = new CalendarImageGenerator(config);
         for (YearMonth currentMonth = startMonth; !currentMonth.isAfter(endMonth); currentMonth = currentMonth.plusMonths(1)) {
-            String filename = String.format("schedule_images/%s_%d_calendar.png",
+            String filename = String.format("schedule_images/%d.%s_%d_calendar.png",
+                    currentMonth.getMonthValue(),
                     currentMonth.getMonth().toString().toLowerCase(),
                     currentMonth.getYear());
             generator.generateCalendarImage(

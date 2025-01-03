@@ -100,6 +100,10 @@ public class Schedule {
         }
     }
 
+    String getFilename() {
+        return file.getName();
+    }
+
     @Override
     public String toString() {
         return "schedule_manager.Schedule{" +
