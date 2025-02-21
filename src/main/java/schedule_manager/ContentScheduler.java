@@ -17,6 +17,8 @@ public class ContentScheduler {
     private String currentWeeklySchedule;
     private final List<String> weeklySchedules;
 
+    private boolean emptyOnly = false;
+
     Map<String, Integer> monthContentCounter;
 
     public ContentScheduler(Schedule schedule, List<String> people, List<String> weeklySchedules, int currentWeeklySchedule) {
@@ -29,6 +31,9 @@ public class ContentScheduler {
         this.weeklyContent = parseWeeklySchedule(this.currentWeeklySchedule);
     }
 
+    public void setEmptyOnly(boolean emptyOnly) {
+        this.emptyOnly = emptyOnly;
+    }
 
     public void populateCountMap() {
         this.contentCountMap = new HashMap<>();
@@ -45,8 +50,10 @@ public class ContentScheduler {
             Content content = schedule.getSchedule().get(date);
             Map<Type, Integer> contentCountMapPerson = contentCountMap.get(content.getMaker());
 
-            int current = contentCountMapPerson.get(content.getType());
-            contentCountMapPerson.put(content.getType(), current + 1);
+            if (contentCountMapPerson != null) {
+                int current = contentCountMapPerson.get(content.getType());
+                contentCountMapPerson.put(content.getType(), current + 1);
+            }
         }
     }
 
@@ -182,6 +189,9 @@ public class ContentScheduler {
 
         for (int day = 1; day <= daysInMonth; day++) {
             LocalDate date = firstDayOfMonth.withDayOfMonth(day);
+            if (this.emptyOnly && schedule.getSchedule().containsKey(date)) {
+                continue;
+            }
 
             if (date.getDayOfWeek() == DayOfWeek.MONDAY) {
                 scheduleIndex = (scheduleIndex + 1) % weeklySchedules.size();
