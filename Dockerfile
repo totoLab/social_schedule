@@ -19,7 +19,7 @@ COPY src ./src
 RUN ./mvnw package -DskipTests
 
 # Expose the port the app runs on
-EXPOSE 8080
+EXPOSE 7300
 
 # Run the JAR file
 CMD ["java", "-jar", "target/social-schedule-0.0.1-SNAPSHOT.jar"]
