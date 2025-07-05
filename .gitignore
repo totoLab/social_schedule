@@ -40,3 +40,7 @@ build/
 *.json
 *.bak
 schedule_images/
+.mvn
+mvnw*
+transfer.sh
+merge.py
