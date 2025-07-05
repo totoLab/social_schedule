@@ -1,16 +1,12 @@
 package com.rcyouth.socialschedule.controller;
 
-import com.rcyouth.socialschedule.schedule_manager.Schedule;
+import com.rcyouth.socialschedule.model.Schedule;
 import com.rcyouth.socialschedule.service.ScheduleService;
-import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/schedules")
@@ -23,41 +19,27 @@ public class ScheduleController {
         this.scheduleService = scheduleService;
     }
 
-    // Request DTO for schedule generation
-    static class GenerateScheduleRequest {
-        public int year;
-        public int startMonth;
-        public int endMonth;
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Schedule>> generateSchedule(@RequestParam GenerateScheduleRequest generateScheduleRequest) {
-        List<Schedule> schedules = new ArrayList<>(); // placeholder
+    @GetMapping("/{year}/{month}")
+    public ResponseEntity<List<Schedule>> getSchedulesByMonth(@PathVariable int year, @PathVariable int month) {
+        List<Schedule> schedules = scheduleService.getSchedulesByMonth(year, month);
         return ResponseEntity.ok(schedules);
     }
 
-    @PostMapping("/{scheduleName}/{year}/{month}/generate")
-    public ResponseEntity<Schedule> generateSchedule(@PathVariable String scheduleName, @RequestBody GenerateScheduleRequest request) {
-        Schedule generatedSchedule = scheduleService.generateSchedule(scheduleName, request.year, request.startMonth, request.endMonth);
-        return ResponseEntity.ok(generatedSchedule);
+    @GetMapping("/{year}")
+    public ResponseEntity<List<Schedule>> getSchedulesByYear(@PathVariable int year) {
+        List<Schedule> schedules = scheduleService.getSchedulesByYear(year);
+        return ResponseEntity.ok(schedules);
     }
 
-    @PostMapping("/{scheduleName}/{year}/{month}/save")
-    public ResponseEntity<Schedule> saveSchedule(@PathVariable String scheduleName, @RequestBody Schedule scheduleToSave) {
-        Schedule savedSchedule = scheduleService.saveSchedule(scheduleName, scheduleToSave);
+    @PostMapping
+    public ResponseEntity<Schedule> saveSchedule(@RequestBody Schedule schedule) {
+        Schedule savedSchedule = scheduleService.saveSchedule(schedule);
         return ResponseEntity.ok(savedSchedule);
     }
 
-    @GetMapping("/{scheduleName}/{year}/{month}")
-    public ResponseEntity<Schedule> getScheduleByMonth(@PathVariable String scheduleName, @PathVariable int year, @PathVariable int month) {
-        Schedule schedule = scheduleService.getScheduleByMonth(scheduleName, year, month);
-        return ResponseEntity.ok(schedule);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSchedule(@PathVariable Long id) {
+        scheduleService.deleteSchedule(id);
+        return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/{scheduleName}/{year}")
-    public ResponseEntity<Schedule> getScheduleByYear(@PathVariable String scheduleName, @PathVariable int year) {
-        Schedule schedule = scheduleService.getScheduleByYear(scheduleName, year);
-        return ResponseEntity.ok(schedule);
-    }
-
 }
