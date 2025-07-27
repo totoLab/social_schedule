@@ -18,9 +18,7 @@ public class AnalysisService {
         this.scheduleRepository = scheduleRepository;
     }
 
-    public Map<String, Object> analyzePersonContent(Long personId, int year, int month) {
-        LocalDate startDate = LocalDate.of(year, month, 1);
-        LocalDate endDate = startDate.plusMonths(1).minusDays(1);
+    public Map<String, Object> analyzePersonContent(long personId, LocalDate startDate, LocalDate endDate) {
         List<Schedule> schedules = scheduleRepository.findByPersonIdAndScheduledDateBetween(personId, startDate, endDate);
 
         Map<String, Integer> typeDistribution = new HashMap<>();
@@ -32,6 +30,18 @@ public class AnalysisService {
         result.put("personId", personId);
         result.put("typeDistribution", typeDistribution);
         return result;
+    }
+
+    public Map<String, Object> analyzePersonYearlyContent(Long personId, int year) {
+        LocalDate startDate = LocalDate.of(year, 1, 1);
+        LocalDate endDate = LocalDate.of(year, 12, 31);
+        return analyzePersonContent(personId, startDate, endDate);
+    }
+
+    public Map<String, Object> analyzePersonMonthlyContent(Long personId, int year, int month) {
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.plusMonths(1).minusDays(1);
+        return analyzePersonContent(personId, startDate, endDate);
     }
 
     public Map<String, Object> analyzeMonth(int year, int month) {

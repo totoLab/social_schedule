@@ -20,7 +20,13 @@ public class AnalysisController {
 
     @GetMapping("/person/{personId}/{year}/{month}")
     public ResponseEntity<Map<String, Object>> analyzePersonContent(@PathVariable Long personId, @PathVariable int year, @PathVariable int month) {
-        Map<String, Object> analysisResult = analysisService.analyzePersonContent(personId, year, month);
+        Map<String, Object> analysisResult = analysisService.analyzePersonMonthlyContent(personId, year, month);
+        return ResponseEntity.ok(analysisResult);
+    }
+
+    @GetMapping("/person/{personId}/{year}")
+    public ResponseEntity<Map<String, Object>> analyzePersonContent(@PathVariable Long personId, @PathVariable int year) {
+        Map<String, Object> analysisResult = analysisService.analyzePersonYearlyContent(personId, year);
         return ResponseEntity.ok(analysisResult);
     }
 
