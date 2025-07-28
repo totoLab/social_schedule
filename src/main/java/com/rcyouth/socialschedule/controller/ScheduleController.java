@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -29,6 +30,20 @@ public class ScheduleController {
     public ResponseEntity<List<Schedule>> getSchedulesByYear(@PathVariable int year) {
         List<Schedule> schedules = scheduleService.getSchedulesByYear(year);
         return ResponseEntity.ok(schedules);
+    }
+
+    @GetMapping("/person/{personId}/{year}/{month}/content-type/{type}")
+    public List<Schedule> getPersonMonthlyContentWithType(@PathVariable long personId, @PathVariable int year, @PathVariable int month, @PathVariable String type) {
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.plusMonths(1).minusDays(1);
+        return scheduleService.getPersonContentWithType(personId, startDate, endDate, type);
+    }
+
+    @GetMapping("/person/{personId}/{year}/content-type/{type}")
+    public List<Schedule> getPersonMonthlyContentWithType(@PathVariable long personId, @PathVariable int year, @PathVariable String type) {
+        LocalDate startDate = LocalDate.of(year, 1, 1);
+        LocalDate endDate = LocalDate.of(year, 12, 31);
+        return scheduleService.getPersonContentWithType(personId, startDate, endDate, type);
     }
 
     @PostMapping
